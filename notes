@@ -1,0 +1,4 @@
+# get topic
+topic=$1
+
+cat ~/${topic}notes.txt
