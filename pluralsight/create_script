@@ -5,24 +5,17 @@
 # Author: jvillete
 
 # Is there an argument?
-scriptname="$1"
-if [[ ! $scriptname ]]; then
+if [[ ! $1 ]]; then
 	echo "Missing argument" >&2
 	exit 1
 fi
 
-bindir="${HOME}/bashing/pluralsight"
-filename="${bindir}/${scriptname}"
-
-if [[ -e $filename ]]; then
-	echo "File ${filename} already exists" >&2
-	exit 1
+declare open_editor=""
+if [[ $# -eq 1 ]]; then
+	open_editor="true"
 fi
 
-if type "$scriptname" 1> /dev/null 2>&1; then
-	echo "There is already a command with name ${scriptname}" >&2
-	exit 1
-fi
+declare -r bindir="${HOME}/git/bashing/pluralsight"
 
 # Check bin directory exists
 if [[ ! -d $bindir ]]; then
@@ -35,22 +28,45 @@ if [[ ! -d $bindir ]]; then
 	fi
 fi
 
-# Create a script with a single line
-echo '#!/bin/bash' >> "$filename"
-echo '' >> "$filename"
-echo 'exit 0' >> "$filename"
+declare scriptname=""
+while [[ $1 ]]; do
+	scriptname="$1"
+	filename="${bindir}/${scriptname}"
 
-# Add executable permission
-chmod u+x "$filename"
+	if [[ -e $filename ]]; then
+		echo "File ${filename} already exists" >&2
+		shift
+		continue
+	fi
+	
+	if type "$scriptname" 1> /dev/null 2>&1; then
+		echo "There is already a command with name ${scriptname}" >&2
+		shift
+		continue
+	fi
 
-# Create a symbolic link at $HOME bin (available on $PATH)
-ln -s ${filename} ${HOME}/bin
+	# Create a script with a single line
+	echo '#!/bin/bash' >> "$filename"
+	echo '' >> "$filename"
+	echo 'exit 0' >> "$filename"
+	
+	# Add executable permission
+	chmod u+x "$filename"
+
+	# Create a symbolic link at $HOME bin (available on $PATH)
+	ln -s "${filename}" "${HOME}/bin"
+	
+	shift
+done
 
 # Open with editor
-if [[ $EDITOR ]]; then
-	$EDITOR "$filename"
-else
-	vi "$filename"
+if [[ $open_editor ]]; then
+	echo opening
+	if [[ $EDITOR ]]; then
+		$EDITOR "$filename"
+	else
+		vi "$filename"
+	fi
 fi
 
 exit 0
