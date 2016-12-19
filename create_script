@@ -11,7 +11,7 @@ if [[ ! $scriptname ]]; then
 	exit 1
 fi
 
-bindir="${HOME}/bin"
+bindir="${HOME}/bashing/pluralsight"
 filename="${bindir}/${scriptname}"
 
 if [[ -e $filename ]]; then
@@ -39,8 +39,13 @@ fi
 echo '#!/bin/bash' >> "$filename"
 echo '' >> "$filename"
 echo 'exit 0' >> "$filename"
+
 # Add executable permission
 chmod u+x "$filename"
+
+# Create a symbolic link at $HOME bin (available on $PATH)
+ln -s ${filename} ${HOME}/bin
+
 # Open with editor
 if [[ $EDITOR ]]; then
 	$EDITOR "$filename"
