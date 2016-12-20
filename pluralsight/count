@@ -11,7 +11,7 @@ declare reverse=""
 declare -i begin=0
 declare -i step=1
 
-while getopts "b:s:r" opt; do
+while getopts ":b:s:r" opt; do
 	case $opt in
 		r)
 			reverse="yes"
@@ -23,6 +23,10 @@ while getopts "b:s:r" opt; do
 		s)
 			[[ ${OPTARG} =~ ^[0-9]+$ ]] || { echo "${OPTARG} is not a number" >&2; exit 1; }
 			step="${OPTARG}"
+			;;
+		:)
+			echo "Option -${OPTARG} is missing an argument"
+			exit 1;
 			;;
 		\?)
 			exit 1;
