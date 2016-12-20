@@ -17,12 +17,12 @@ else
 	exit 1
 fi
 
-char="="
+declare char="="
 if [[ $2 ]]; then
 	char="$2"
 fi
 
-line=
+declare line
 for (( i=0; i<length; ++i )); do
 	line="${line}${char}"
 done
