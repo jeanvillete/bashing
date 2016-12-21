@@ -10,8 +10,7 @@ declare -r date=$(date)
 declare -r topic="$1"
 
 # determine where to save our notes
-declare notesdir="${HOME}"
-[[ $NOTESDIR ]] && notesdir="${NOTESDIR}"
+declare notesdir=${NOTESDIR:-$HOME}
 
 if [[ ! -d $notesdir ]]; then
 	mkdir "${notesdir}" 2> /dev/null || { echo "Cannot make directory ${notesdir}" 1>&2; exit 1; }
