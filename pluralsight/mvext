@@ -2,20 +2,10 @@
 
 # change filename extension
 
-if [[ $# -ne 2 ]]; then
-	echo "Need exactly two arguments" >&2
-	exit 1
-fi
-
-# the same as the 'if' above, but expressed as 'group argument'
-#[[ $# -eq 2 ]] || {
-#	echo "Need exactly two arguments" >&2
-#	exit 1
-#}
+[[ $# -ne 2 ]] && { echo "Need exactly two arguments" >&2; exit 1; }
 
 for f in *"$1"; do
-	base=$(basename "$f" "$1")
-	mv "$f" "${base}$2" 1> /dev/null 2>&1
+	mv "$f" "${f/%$1/$2}" 2> /dev/null
 done
 
 exit 0
