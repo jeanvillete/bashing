@@ -1,0 +1,95 @@
+#!/bin/bash
+
+usage() {
+cat <<END
+wasdev 
+    -i [install package for the provided alias]
+    -u [update package for the provided alias]
+    -d [delete package for the provided alias]
+    -w [washome, set the IBM WebSphere home directory, if nothing is provided, the current stored value is printed on the stdio]
+    -a [set an alias for a package, lists all if nothing is provided or prints details abount some package if the alias is provided]
+END
+}
+
+# function to handle errors.
+# first argument: error message to print
+# second argument: exit code to exit script with
+error() {
+    echo "Error: $1"
+    usage
+    exit $2
+} >&2
+
+
+# storage directory for 'wasdev'
+declare -r rcdir="${HOME}/.wasdev"
+
+# function responsible to check if the ${HOME}/.wasdev
+# (runtime configuration) directory exits
+rcExistsDir() {
+    if [[ ! -d $rcdir ]]; then
+        read -rp "'$rcdir' doesn't exist, create it? [Y/N]: "
+        if [[ $REPLY =~ [Yy] ]]; then
+            mkdir $rcdir
+        else
+            echo "It is mandatory the '${rcdir}' directory, until there it's not possible proceed."
+            return 1
+        fi
+    fi
+}
+
+declare -r rcWasHome="$rcdir/washome"
+rcExistsWasHome() {
+    [[ -s ${rcWasHome} ]]
+}
+
+# prints the current value stored for ${HOME}/.wasdev/washome
+rcPrintCurrent() {
+    rcExistsWasHome || { echo "No valid value currently stored for washome; '${rcWasHome}'";  exit 0; }
+    cat "${rcWasHome}"
+}
+
+# checking whether the provided param is an option mode
+isOption() {
+    [[ $1 =~ ^-[a-z]$ ]]
+}
+
+# decide and invoke proper option
+chooseOption() {
+    case "$1" in
+        w)
+            rcExistsDir || break
+            # if no 'option value' is found, show current value
+            if [[ ! $2 ]]; then
+                rcExistsWasHome && cat "$rcWasHome" || echo "No washome (WebSphere Home Directory) has been stored yet."
+            # if an 'option value' is found and it's not a 'isOption', store the received value on '$rcWasHome'
+            elif isOption $2; then
+                echo "it is an 'option value', hold on, i'm not going to implement it for now"
+            else
+                # the 'washome' has to be a valid directory
+                [[ -d $2 ]] || { echo "'$2' is not a valid directory"; exit 1; }
+                echo "$2" > "$rcWasHome"
+            fi
+            ;;
+        h)
+            usage
+            exit 0
+            ;;
+        :)
+            chooseOption $2
+            ;;
+        \?)
+            error "Unknown option: -$2" 3
+            ;;
+    esac
+}
+
+# at least one argument has to be provided
+[[ $# -gt 0 ]] || { usage; exit 1; }
+
+# loop through arguments
+while getopts ":hw:" opt; do
+    chooseOption "$opt" "$OPTARG"
+done
+
+exit 0
